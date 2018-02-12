@@ -23,7 +23,7 @@ for i in range(1, 11):
 # open-world
 for i in range(1, 11):
     print("open-world try = ", i)
-    preprocess_script.main(100, 30, 60, 5500, 3500)
+    preprocess_data.main(100, 30, 60, 5500, 3500)
     var_cnn_ensemble.main(100, 30, 60, 5500, 3500)
     evaluate_ensemble.main(100, 30, 60, 5500, 3500)
     
