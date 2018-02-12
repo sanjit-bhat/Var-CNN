@@ -1,5 +1,7 @@
 This is the code for the paper "Var-CNN and DynaFlow: Improved Attacks and Defenses for Website Fingerprinting".
 
+Before you begin, first ensure that you have a functioning machine with an NVIDIA GPU inside it. Without a GPU, the model will take significantly longer to run on a CPU. To set up the relevent software stack, see this link: https://blog.slavv.com/the-1700-great-deep-learning-box-assembly-setup-and-benchmarks-148c5ebe6415make under the "Software Setup" section. For our experiments, we used Ubuntu 16.04 LTS, CUDA 8.0, CuDNN v6, and TensorFlow 1.3.0 as a backend for Keras 2.0.8.
+
 To run the attack, make sure preprocess_data.py, var_cnn_ensemble.py, evaluate_ensemble.py, and run_open_closed_world.py are in the same folder.
 In that folder, make directories called preprocess and predictions. These will be used to store the randomized train/test
 sets and the final softmax outputs of the packet time and packet direction models.
