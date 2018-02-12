@@ -15,13 +15,13 @@ from sklearn.preprocessing import StandardScaler
 import numpy as np
 import time
 
-NUM_SENS_SITES = 100
-NUM_SENS_INST_TEST = 30
-NUM_SENS_INST_TRAIN = 60
-NUM_SENS_INST = NUM_SENS_INST_TEST + NUM_SENS_INST_TRAIN
-NUM_INSENS_SITES_TEST = 5500
-NUM_INSENS_SITES_TRAIN = 3500
-NUM_INSENS_SITES = NUM_INSENS_SITES_TEST + NUM_INSENS_SITES_TRAIN
+NUM_MON_SITES = 100
+NUM_MON_INST_TEST = 30
+NUM_MON_INST_TRAIN = 60
+NUM_MON_INST = NUM_MON_INST_TEST + NUM_MON_INST_TRAIN
+NUM_UNMON_SITES_TEST = 5500
+NUM_UNMON_SITES_TRAIN = 3500
+NUM_UNMON_SITES = NUM_UNMON_SITES_TEST + NUM_UNMON_SITES_TRAIN
 
 seq_length = 4096
 
@@ -117,9 +117,9 @@ def dir_cnn(is_closed):
     combined = dense_layer(combined, 1024, 0.5)
 
     if is_closed:
-        combined_output = Dense(units=NUM_SENS_SITES, activation='softmax', name='combined_output')(combined)
+        combined_output = Dense(units=NUM_MON_SITES, activation='softmax', name='combined_output')(combined)
     else:
-        combined_output = Dense(units=NUM_SENS_SITES + 1, activation='softmax', name='combined_output')(combined)
+        combined_output = Dense(units=NUM_MON_SITES + 1, activation='softmax', name='combined_output')(combined)
 
     model = Model(inputs=[cnn_input, metadata_input], outputs=[combined_output])
     model.compile(loss='categorical_crossentropy',
@@ -215,9 +215,9 @@ def time_cnn(is_closed):
     combined = dense_layer(combined, 1024, 0.5)
 
     if is_closed:
-        combined_output = Dense(units=NUM_SENS_SITES, activation='softmax', name='combined_output')(combined)
+        combined_output = Dense(units=NUM_MON_SITES, activation='softmax', name='combined_output')(combined)
     else:
-        combined_output = Dense(units=NUM_SENS_SITES + 1, activation='softmax', name='combined_output')(combined)
+        combined_output = Dense(units=NUM_MON_SITES + 1, activation='softmax', name='combined_output')(combined)
 
     model = Model(inputs=[cnn_input, metadata_input], outputs=[combined_output])
     model.compile(loss='categorical_crossentropy',
@@ -254,13 +254,13 @@ def time_cnn(is_closed):
 
 
 def main(num_sens_sites, num_sens_inst_test, num_sens_inst_train, num_insens_sites_test, num_insens_sites_train):
-    global NUM_SENS_SITES
-    global NUM_SENS_INST_TEST
-    global NUM_SENS_INST_TRAIN
-    global NUM_SENS_INST
-    global NUM_INSENS_SITES_TEST
-    global NUM_INSENS_SITES_TRAIN
-    global NUM_INSENS_SITES
+    global NUM_MON_SITES
+    global NUM_MON_INST_TEST
+    global NUM_MON_INST_TRAIN
+    global NUM_MON_INST
+    global NUM_UNMON_SITES_TEST
+    global NUM_UNMON_SITES_TRAIN
+    global NUM_UNMON_SITES
 
     NUM_SENS_SITES = num_sens_sites
     NUM_SENS_INST_TEST = num_sens_inst_test

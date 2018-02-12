@@ -4,13 +4,13 @@ from __future__ import print_function
 
 import numpy as np
 
-NUM_SENS_SITES = 100
-NUM_SENS_INST_TEST = 30
-NUM_SENS_INST_TRAIN = 60
-NUM_SENS_INST = NUM_SENS_INST_TEST + NUM_SENS_INST_TRAIN
-NUM_INSENS_SITES_TEST = 5500
-NUM_INSENS_SITES_TRAIN = 3500
-NUM_INSENS_SITES = NUM_INSENS_SITES_TEST + NUM_INSENS_SITES_TRAIN
+NUM_MON_SITES = 100
+NUM_MON_INST_TEST = 30
+NUM_MON_INST_TRAIN = 60
+NUM_MON_INST = NUM_MON_INST_TEST + NUM_MON_INST_TRAIN
+NUM_UNMON_SITES_TEST = 5500
+NUM_UNMON_SITES_TRAIN = 3500
+NUM_UNMON_SITES = NUM_UNMON_SITES_TEST + NUM_UNMON_SITES_TRAIN
 
 
 def find_accuracy(is_closed, predictions, actual, min_confidence):
@@ -23,8 +23,8 @@ def find_accuracy(is_closed, predictions, actual, min_confidence):
     for i in range(0, len(certain_predictions)):
         # if classified as sens with not high-enough probability, re-classify as insens
         predicted_class = uncertain_predictions[i]
-        if predicted_class < NUM_SENS_SITES and predictions[i][predicted_class] < min_confidence:
-            certain_predictions[i] = NUM_SENS_SITES
+        if predicted_class < NUM_MON_SITES and predictions[i][predicted_class] < min_confidence:
+            certain_predictions[i] = NUM_MON_SITES
         else:
             certain_predictions[i] = predicted_class
 
@@ -32,30 +32,30 @@ def find_accuracy(is_closed, predictions, actual, min_confidence):
     sens_correct = 0
     insens_as_sens = 0
     for i in range(len(actual)):
-        if actual[i] == NUM_SENS_SITES:  # insens site
-            if certain_predictions[i] < NUM_SENS_SITES:  # but predicted as a sens site
+        if actual[i] == NUM_MON_SITES:  # insens site
+            if certain_predictions[i] < NUM_MON_SITES:  # but predicted as a sens site
                 insens_as_sens += 1
         else:  # sens site
             if actual[i] == certain_predictions[i]:  # prediction matches up
                 sens_correct += 1
 
-    tpr = sens_correct / (NUM_SENS_SITES * NUM_SENS_INST_TEST) * 100
+    tpr = sens_correct / (NUM_MON_SITES * NUM_MON_INST_TEST) * 100
     if is_closed:
         fpr = 0
     else:
-        fpr = insens_as_sens / NUM_INSENS_SITES_TEST * 100
+        fpr = insens_as_sens / NUM_UNMON_SITES_TEST * 100
 
     return "TPR: %f, FPR: %f" % (tpr, fpr)
 
 
 def main(num_sens_sites, num_sens_inst_test, num_sens_inst_train, num_insens_sites_test, num_insens_sites_train):
-    global NUM_SENS_SITES
-    global NUM_SENS_INST_TEST
-    global NUM_SENS_INST_TRAIN
-    global NUM_SENS_INST
-    global NUM_INSENS_SITES_TEST
-    global NUM_INSENS_SITES_TRAIN
-    global NUM_INSENS_SITES
+    global NUM_MON_SITES
+    global NUM_MON_INST_TEST
+    global NUM_MON_INST_TRAIN
+    global NUM_MON_INST
+    global NUM_UNMON_SITES_TEST
+    global NUM_UNMON_SITES_TRAIN
+    global NUM_UNMON_SITES
 
     NUM_SENS_SITES = num_sens_sites
     NUM_SENS_INST_TEST = num_sens_inst_test
