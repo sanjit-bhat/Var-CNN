@@ -9,7 +9,6 @@ from keras.layers import Dense, Flatten, Dropout, Concatenate
 from keras.layers.normalization import BatchNormalization
 from keras.optimizers import Adam
 from keras import Input
-
 from sklearn.preprocessing import StandardScaler
 
 import numpy as np
@@ -27,12 +26,14 @@ seq_length = 4096
 
 
 def time_conv_layer(model, nb_filters):
+    """Conv-ReLU-Batch Normalization layer for timing. This does not use dilated convolutions."""
     model = Conv1D(filters=nb_filters, kernel_size=3, padding='causal', activation='relu')(model)
     model = BatchNormalization()(model)
     return model
 
 
 def time_conv_block(model, nb_layers, nb_filters):
+    """Creates multiple conv layers followed by max pooling and dropout layers."""
     for _ in range(nb_layers):
         model = time_conv_layer(model, nb_filters)
     model = MaxPooling1D()(model)
@@ -41,10 +42,12 @@ def time_conv_block(model, nb_layers, nb_filters):
 
 
 def dir_conv_layer(model, nb_filters, rate):
+    """Conv-ReLU-Batch Normalization layer for direction. This uses dilated convolutions."""
     model = Conv1D(filters=nb_filters, kernel_size=3, padding='causal', dilation_rate=rate, activation='relu')(model)
     model = BatchNormalization()(model)
 
     # exponentially increase dilated convolution receptive field
+    # receptive field size loops back around when rate = 16 to create [1...8] block
     rate *= 2
     if rate == 16:
         rate = 1
@@ -52,6 +55,7 @@ def dir_conv_layer(model, nb_filters, rate):
 
 
 def dir_conv_block(model, nb_layers, nb_filters, rate):
+    """Creates multiple conv layers followed by max pooling and dropout layers."""
     for _ in range(nb_layers):
         model, rate = dir_conv_layer(model, nb_filters, rate)
     model = MaxPooling1D()(model)
@@ -60,6 +64,7 @@ def dir_conv_block(model, nb_layers, nb_filters, rate):
 
 
 def dense_layer(model, units, drop_rate):
+    """Fully-connected-ReLU-Batch Normalization-Dropout layer."""
     model = Dense(units=units, activation='relu')(model)
     model = BatchNormalization()(model)
     model = Dropout(drop_rate)(model)
@@ -67,6 +72,8 @@ def dense_layer(model, units, drop_rate):
 
 
 def lr_scheduler(epochs):
+    """Multiplies learning rate by 0.1 at 100 and 150 epochs, i.e.,
+    new learning rate = old learning rate * 0.1"""
     switch_points = [0, 99, 149]
     for i in [2, 1, 0]:
         if epochs >= switch_points[i]:
@@ -74,7 +81,10 @@ def lr_scheduler(epochs):
 
 
 # CNN function
-def dir_cnn(is_closed):
+def dir_cnn():
+    """Load data, normalize metadata, and prepare only the packet direction information for input to Var-CNN.
+    Then initialize Var-CNN model, compute final softmax output, and return time taken to compute."""
+
     data_dir = "/home/primes/attack_scripts/open_world/preprocess"
 
     # read in data from numpy files
@@ -116,9 +126,11 @@ def dir_cnn(is_closed):
     combined = Concatenate()([cnn_output, metadata_output])
     combined = dense_layer(combined, 1024, 0.5)
 
-    if is_closed:
+    # add final softmax layer
+    if NUM_UNMON_SITES == 0:  # closed-world
         combined_output = Dense(units=NUM_MON_SITES, activation='softmax', name='combined_output')(combined)
     else:
+        # add extra class for unmonitored sites
         combined_output = Dense(units=NUM_MON_SITES + 1, activation='softmax', name='combined_output')(combined)
 
     model = Model(inputs=[cnn_input, metadata_input], outputs=[combined_output])
@@ -126,16 +138,17 @@ def dir_cnn(is_closed):
                   optimizer=Adam(0.001),
                   metrics=['accuracy'])
 
-    validation_data = ({'cnn_input': test_seq,
-                        'metadata_input': test_metadata},
-                       {'combined_output': test_labels})
-
     training_data = ({'cnn_input': train_seq,
                       'metadata_input': train_metadata},
                      {'combined_output': train_labels})
 
+    test_data = ({'cnn_input': test_seq,
+                  'metadata_input': test_metadata},
+                 {'combined_output': test_labels})
+
     lr_modifier = LearningRateScheduler(schedule=lr_scheduler)
 
+    # train model
     train_time_start = time.time()
     model.fit(x=training_data[0],
               y=training_data[1],
@@ -144,9 +157,10 @@ def dir_cnn(is_closed):
               verbose=0,
               callbacks=[lr_modifier])
     train_time_end = time.time()
-    
+
+    # compute final softmax predictions on test set and save predictions
     test_time_start = time.time()
-    predictions = model.predict(validation_data[0], batch_size=50, verbose=0)
+    predictions = model.predict(test_data[0], batch_size=50, verbose=0)
     test_time_end = time.time()
     
     save_dir = "predictions"
@@ -156,7 +170,10 @@ def dir_cnn(is_closed):
 
 
 # CNN function
-def time_cnn(is_closed):
+def time_cnn():
+    """Load data, normalize metadata, and prepare only the packet time information for input to Var-CNN.
+        Then initialize Var-CNN model, compute final softmax output, and return time taken to compute."""
+
     data_dir = "/home/primes/attack_scripts/open_world/preprocess"
 
     # read in data from numpy files
@@ -184,7 +201,7 @@ def time_cnn(is_closed):
     train_time_dright = np.reshape(train_time_dright, (train_time_dright.shape[0], train_time_dright.shape[1]))
     test_time_dright = np.reshape(test_time_dright, (test_time_dright.shape[0], test_time_dright.shape[1]))
 
-    # apply normalization to time
+    # apply normalization to packet time data according to scaling computed on train timestamp data
     time_scaler = StandardScaler()
     train_time = time_scaler.fit_transform(train_time)
     test_time = time_scaler.transform(test_time)
@@ -214,9 +231,11 @@ def time_cnn(is_closed):
     combined = Concatenate()([cnn_output, metadata_output])
     combined = dense_layer(combined, 1024, 0.5)
 
-    if is_closed:
+    # add final softmax layer
+    if NUM_UNMON_SITES == 0:  # closed-world
         combined_output = Dense(units=NUM_MON_SITES, activation='softmax', name='combined_output')(combined)
     else:
+        # add extra class for unmonitored sites
         combined_output = Dense(units=NUM_MON_SITES + 1, activation='softmax', name='combined_output')(combined)
 
     model = Model(inputs=[cnn_input, metadata_input], outputs=[combined_output])
@@ -224,16 +243,17 @@ def time_cnn(is_closed):
                   optimizer=Adam(0.001),
                   metrics=['accuracy'])
 
-    validation_data = ({'cnn_input': test_seq,
-                        'metadata_input': test_metadata},
-                       {'combined_output': test_labels})
-
     training_data = ({'cnn_input': train_seq,
                       'metadata_input': train_metadata},
                      {'combined_output': train_labels})
 
+    test_data = ({'cnn_input': test_seq,
+                  'metadata_input': test_metadata},
+                 {'combined_output': test_labels})
+
     lr_modifier = LearningRateScheduler(schedule=lr_scheduler)
 
+    # train model
     train_time_start = time.time()
     model.fit(x=training_data[0],
               y=training_data[1],
@@ -243,8 +263,9 @@ def time_cnn(is_closed):
               callbacks=[lr_modifier])
     train_time_end = time.time()
 
+    # compute final softmax predictions on test set and save predictions
     test_time_start = time.time()
-    predictions = model.predict(validation_data[0], batch_size=50, verbose=0)
+    predictions = model.predict(test_data[0], batch_size=50, verbose=0)
     test_time_end = time.time()
     
     save_dir = "predictions"
@@ -253,7 +274,7 @@ def time_cnn(is_closed):
     return (train_time_end - train_time_start), (test_time_end - test_time_start)
 
 
-def main(num_sens_sites, num_sens_inst_test, num_sens_inst_train, num_insens_sites_test, num_insens_sites_train):
+def main(num_mon_sites, num_mon_inst_test, num_mon_inst_train, num_unmon_sites_test, num_unmon_sites_train):
     global NUM_MON_SITES
     global NUM_MON_INST_TEST
     global NUM_MON_INST_TRAIN
@@ -262,28 +283,20 @@ def main(num_sens_sites, num_sens_inst_test, num_sens_inst_train, num_insens_sit
     global NUM_UNMON_SITES_TRAIN
     global NUM_UNMON_SITES
 
-    NUM_SENS_SITES = num_sens_sites
-    NUM_SENS_INST_TEST = num_sens_inst_test
-    NUM_SENS_INST_TRAIN = num_sens_inst_train
-    NUM_SENS_INST = num_sens_inst_test + num_sens_inst_train
-    NUM_INSENS_SITES_TEST = num_insens_sites_test
-    NUM_INSENS_SITES_TRAIN = num_insens_sites_train
-    NUM_INSENS_SITES = num_insens_sites_test + num_insens_sites_train
+    NUM_MON_SITES = num_mon_sites
+    NUM_MON_INST_TEST = num_mon_inst_test
+    NUM_MON_INST_TRAIN = num_mon_inst_train
+    NUM_MON_INST = num_mon_inst_test + num_mon_inst_train
+    NUM_UNMON_SITES_TEST = num_unmon_sites_test
+    NUM_UNMON_SITES_TRAIN = num_unmon_sites_train
+    NUM_UNMON_SITES = num_unmon_sites_test + num_unmon_sites_train
 
-    if NUM_INSENS_SITES == 0:
-        print("running dir model")
-        time_train_dir_model, time_test_dir_model = dir_cnn(True)
-        print("running time model")
-        time_train_time_model, time_test_time_model = time_cnn(True)
-        print("Total Train Time: %f" % (time_train_dir_model + time_train_time_model))
-        print("Total Test Time: %f" % (time_test_dir_model + time_test_time_model))
-    else:
-        print("running dir model")
-        time_train_dir_model, time_test_dir_model = dir_cnn(False)
-        print("running time model")
-        time_train_time_model, time_test_time_model = time_cnn(False)
-        print("Total Train Time: %f" % (time_train_dir_model + time_train_time_model))
-        print("Total Test Time: %f" % (time_test_dir_model + time_test_time_model))
+    print("running dir model")
+    time_train_dir_model, time_test_dir_model = dir_cnn()
+    print("running time model")
+    time_train_time_model, time_test_time_model = time_cnn()
+    print("Total Train Time: %f" % (time_train_dir_model + time_train_time_model))
+    print("Total Test Time: %f" % (time_test_dir_model + time_test_time_model))
 
 
 if __name__ == '__main__':
