@@ -83,7 +83,7 @@ def lr_scheduler(epochs):
 # CNN function
 def dir_cnn():
     """Load data, normalize metadata, and prepare only the packet direction information for input to Var-CNN.
-    Then initialize Var-CNN model, compute final softmax output, and return time taken to compute."""
+    Then initialize the Var-CNN model, compute final softmax output, and return time taken to run."""
 
     data_dir = "/home/primes/attack_scripts/open_world/preprocess"
 
@@ -172,7 +172,7 @@ def dir_cnn():
 # CNN function
 def time_cnn():
     """Load data, normalize metadata, and prepare only the packet time information for input to Var-CNN.
-        Then initialize Var-CNN model, compute final softmax output, and return time taken to compute."""
+        Then initialize the Var-CNN model, compute final softmax output, and return time taken to run."""
 
     data_dir = "/home/primes/attack_scripts/open_world/preprocess"
 
