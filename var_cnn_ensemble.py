@@ -27,6 +27,7 @@ seq_length = 4096
 
 def time_conv_layer(model, nb_filters):
     """Conv-ReLU-Batch Normalization layer for timing. This does not use dilated convolutions."""
+
     model = Conv1D(filters=nb_filters, kernel_size=3, padding='causal', activation='relu')(model)
     model = BatchNormalization()(model)
     return model
@@ -34,6 +35,7 @@ def time_conv_layer(model, nb_filters):
 
 def time_conv_block(model, nb_layers, nb_filters):
     """Creates multiple conv layers followed by max pooling and dropout layers."""
+
     for _ in range(nb_layers):
         model = time_conv_layer(model, nb_filters)
     model = MaxPooling1D()(model)
@@ -43,6 +45,7 @@ def time_conv_block(model, nb_layers, nb_filters):
 
 def dir_conv_layer(model, nb_filters, rate):
     """Conv-ReLU-Batch Normalization layer for direction. This uses dilated convolutions."""
+
     model = Conv1D(filters=nb_filters, kernel_size=3, padding='causal', dilation_rate=rate, activation='relu')(model)
     model = BatchNormalization()(model)
 
@@ -56,6 +59,7 @@ def dir_conv_layer(model, nb_filters, rate):
 
 def dir_conv_block(model, nb_layers, nb_filters, rate):
     """Creates multiple conv layers followed by max pooling and dropout layers."""
+
     for _ in range(nb_layers):
         model, rate = dir_conv_layer(model, nb_filters, rate)
     model = MaxPooling1D()(model)
@@ -65,6 +69,7 @@ def dir_conv_block(model, nb_layers, nb_filters, rate):
 
 def dense_layer(model, units, drop_rate):
     """Fully-connected-ReLU-Batch Normalization-Dropout layer."""
+
     model = Dense(units=units, activation='relu')(model)
     model = BatchNormalization()(model)
     model = Dropout(drop_rate)(model)
@@ -74,6 +79,7 @@ def dense_layer(model, units, drop_rate):
 def lr_scheduler(epochs):
     """Multiplies learning rate by 0.1 at 100 and 150 epochs, i.e.,
     new learning rate = old learning rate * 0.1"""
+
     switch_points = [0, 99, 149]
     for i in [2, 1, 0]:
         if epochs >= switch_points[i]:
