@@ -7,39 +7,43 @@ from keras.utils.np_utils import to_categorical
 
 import numpy as np
 import random as rn
-
 import gc
 import os
 import shutil
 
-NUM_SENS_SITES = 100
-NUM_SENS_INST_TEST = 30
-NUM_SENS_INST_TRAIN = 60
-NUM_SENS_INST = NUM_SENS_INST_TEST + NUM_SENS_INST_TRAIN
-NUM_INSENS_SITES_TEST = 5500
-NUM_INSENS_SITES_TRAIN = 3500
-NUM_INSENS_SITES = NUM_INSENS_SITES_TEST + NUM_INSENS_SITES_TRAIN
+NUM_MON_SITES = 100
+NUM_MON_INST_TEST = 30
+NUM_MON_INST_TRAIN = 60
+NUM_MON_INST = NUM_MON_INST_TEST + NUM_MON_INST_TRAIN
+NUM_UNMON_SITES_TEST = 5500
+NUM_UNMON_SITES_TRAIN = 3500
+NUM_UNMON_SITES = NUM_UNMON_SITES_TEST + NUM_UNMON_SITES_TRAIN
 
 seq_length = 4096
 
 data_loc = "/home/primes/datasets/knndata/batch"
 
 
-def release_list(a):
-    del a[:]
-    del a
+def release_list(a_list):
+    """Free a_list from memory"""
+    del a_list[:]
+    del a_list
 
 
 def process(is_closed):
+    """Read in data, perform randomized split into train/test sets, calculate
+    inter-packet timings and metadata, pad/truncate sequences, create one-hot encodings of labels,
+    and save all this information to the preprocess folder."""
+
     train_seq_and_labels = []
     test_seq_and_labels = []
 
     print("reading data - sens")
 
-    for site in range(0, NUM_SENS_SITES):
+    for site in range(0, NUM_MON_SITES):
         all_instances = []
 
-        for sense in range(0, NUM_SENS_INST):
+        for sense in range(0, NUM_MON_INST):
             path = data_loc + "/%d-%d" % (site, sense)
             f = open(path)
             cell_time_and_dir = f.read().split()
@@ -47,7 +51,7 @@ def process(is_closed):
             cell_time = []
             cell_dir = []
 
-            # Metadata Measurements
+            # Metadata measurements
             total_time = float(cell_time_and_dir[len(cell_time_and_dir) - 2])
             total_outgoing = 0  # 1
             total_incoming = 0  # -1
@@ -77,8 +81,8 @@ def process(is_closed):
         rn.shuffle(all_instances)
 
         # split instances into train and validation/test sets
-        for sense in range(0, NUM_SENS_INST):
-            if sense < NUM_SENS_INST_TRAIN:
+        for sense in range(0, NUM_MON_INST):
+            if sense < NUM_MON_INST_TRAIN:
                 train_seq_and_labels.append([all_instances[sense][0], all_instances[sense][1],
                                              all_instances[sense][2], site])
             else:
@@ -88,7 +92,7 @@ def process(is_closed):
     print("reading data - insens")
 
     all_insens = []
-    for site in range(0, NUM_INSENS_SITES):
+    for site in range(0, NUM_UNMON_SITES):
         path = data_loc + "/%d" % site
         f = open(path)
         cell_time_and_dir = f.read().split()
@@ -96,16 +100,19 @@ def process(is_closed):
         cell_time = []
         cell_dir = []
 
-        # Metadata Measurements
+        # Metadata measurements
         total_time = float(cell_time_and_dir[len(cell_time_and_dir) - 2])
         total_outgoing = 0  # 1
         total_incoming = 0  # -1
 
         for i, value in enumerate(cell_time_and_dir):
+            packet_num = i / 2
             if i % 2 == 0:
-                cell_time.append(float(value))
+                if packet_num < 4100:
+                    cell_time.append(float(value))
             else:
-                cell_dir.append(float(value))
+                if packet_num < 4100:
+                    cell_dir.append(float(value))
 
                 if float(value) == 1.:
                     total_outgoing += 1
@@ -123,13 +130,13 @@ def process(is_closed):
     rn.shuffle(all_insens)
 
     # split instances into train and validation/test set
-    for insens in range(0, NUM_INSENS_SITES):
-        if insens < NUM_INSENS_SITES_TRAIN:
+    for insens in range(0, NUM_UNMON_SITES):
+        if insens < NUM_UNMON_SITES_TRAIN:
             train_seq_and_labels.append([all_insens[insens][0], all_insens[insens][1],
-                                         all_insens[insens][2], NUM_SENS_SITES])
+                                         all_insens[insens][2], NUM_MON_SITES])
         else:
             test_seq_and_labels.append([all_insens[insens][0], all_insens[insens][1],
-                                        all_insens[insens][2], NUM_SENS_SITES])
+                                        all_insens[insens][2], NUM_MON_SITES])
 
     print("processing data")
 
@@ -147,6 +154,7 @@ def process(is_closed):
     test_metadata = []
     test_labels = []
 
+    # extract sequences from randomized train/test sets
     for time_seq, dir_seq, metadata, label in train_seq_and_labels:
         train_time.append(time_seq)
         train_dir.append(dir_seq)
@@ -158,6 +166,7 @@ def process(is_closed):
         test_metadata.append(metadata)
         test_labels.append(label)
 
+    # free randomized sets from memory to conserve system RAM
     release_list(all_insens)
     release_list(train_seq_and_labels)
     release_list(test_seq_and_labels)
@@ -172,9 +181,9 @@ def process(is_closed):
     test_time = pad_sequences(test_time, maxlen=seq_length, dtype='float32', padding='post', truncating='post')
     test_dir = pad_sequences(test_dir, maxlen=seq_length, dtype='float32', padding='post', truncating='post')
 
-    # calculate timing deltas - time difference between consecutive packets
-    train_time_dleft = np.zeros(train_time.shape)  # for current packet, delta time bw. prev packet and current
-    train_time_dright = np.zeros(train_time.shape)  # for current packet, delta time bw. next packet and current
+    # calculate inter-packet timings - time difference between consecutive packets
+    train_time_dleft = np.zeros(train_time.shape)  # for current packet, time difference bw/ prev packet and current
+    train_time_dright = np.zeros(train_time.shape)  # for current packet, time difference bw/ next packet and current
     for row in range(train_time.shape[0]):
         for col in range(1, train_time.shape[1]):
             train_time_dleft[row][col] = train_time[row][col] - train_time[row][col - 1]
@@ -189,16 +198,17 @@ def process(is_closed):
         for col in range(0, test_time.shape[1] - 1):
             test_time_dright[row][col] = test_time[row][col + 1] - test_time[row][col]
 
+    # stacking makes these sequences easier to save
     train_seq = np.stack((train_time, train_time_dleft, train_time_dright, train_dir), axis=-1)
     test_seq = np.stack((test_time, test_time_dleft, test_time_dright, test_dir), axis=-1)
 
     # one-hot encoding of labels
     if is_closed:
-        train_labels = to_categorical(train_labels, num_classes=NUM_SENS_SITES)
-        test_labels = to_categorical(test_labels, num_classes=NUM_SENS_SITES)
+        train_labels = to_categorical(train_labels, num_classes=NUM_MON_SITES)
+        test_labels = to_categorical(test_labels, num_classes=NUM_MON_SITES)
     else:
-        train_labels = to_categorical(train_labels, num_classes=NUM_SENS_SITES + 1)
-        test_labels = to_categorical(test_labels, num_classes=NUM_SENS_SITES + 1)
+        train_labels = to_categorical(train_labels, num_classes=NUM_MON_SITES + 1)
+        test_labels = to_categorical(test_labels, num_classes=NUM_MON_SITES + 1)
 
     print("training data stats: ")
     print(train_seq.shape)
@@ -224,24 +234,24 @@ def process(is_closed):
     np.save(file=r"%s/test_labels" % save_dir, arr=test_labels)
 
 
-def main(num_sens_sites, num_sens_inst_test, num_sens_inst_train, num_insens_sites_test, num_insens_sites_train):
-    global NUM_SENS_SITES
-    global NUM_SENS_INST_TEST
-    global NUM_SENS_INST_TRAIN
-    global NUM_SENS_INST
-    global NUM_INSENS_SITES_TEST
-    global NUM_INSENS_SITES_TRAIN
-    global NUM_INSENS_SITES
+def main(num_mon_sites, num_mon_inst_test, num_mon_inst_train, num_unmon_sites_test, num_unmon_sites_train):
+    global NUM_MON_SITES
+    global NUM_MON_INST_TEST
+    global NUM_MON_INST_TRAIN
+    global NUM_MON_INST
+    global NUM_UNMON_SITES_TEST
+    global NUM_UNMON_SITES_TRAIN
+    global NUM_UNMON_SITES
 
-    NUM_SENS_SITES = num_sens_sites
-    NUM_SENS_INST_TEST = num_sens_inst_test
-    NUM_SENS_INST_TRAIN = num_sens_inst_train
-    NUM_SENS_INST = num_sens_inst_test + num_sens_inst_train
-    NUM_INSENS_SITES_TEST = num_insens_sites_test
-    NUM_INSENS_SITES_TRAIN = num_insens_sites_train
-    NUM_INSENS_SITES = num_insens_sites_test + num_insens_sites_train
+    NUM_MON_SITES = num_mon_sites
+    NUM_MON_INST_TEST = num_mon_inst_test
+    NUM_MON_INST_TRAIN = num_mon_inst_train
+    NUM_MON_INST = num_mon_inst_test + num_mon_inst_train
+    NUM_UNMON_SITES_TEST = num_unmon_sites_test
+    NUM_UNMON_SITES_TRAIN = num_unmon_sites_train
+    NUM_UNMON_SITES = num_unmon_sites_test + num_unmon_sites_train
 
-    if NUM_INSENS_SITES == 0:
+    if NUM_UNMON_SITES == 0:
         process(True)
     else:
         process(False)
