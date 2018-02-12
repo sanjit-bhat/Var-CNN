@@ -30,7 +30,7 @@ def release_list(a_list):
     del a_list
 
 
-def process(is_closed):
+def process():
     """Read in data, perform randomized split into train/test sets, calculate
     inter-packet timings and metadata, pad/truncate sequences, create one-hot encodings of labels,
     and save all this information to the preprocess folder."""
@@ -203,10 +203,11 @@ def process(is_closed):
     test_seq = np.stack((test_time, test_time_dleft, test_time_dright, test_dir), axis=-1)
 
     # one-hot encoding of labels
-    if is_closed:
+    if NUM_UNMON_SITES == 0:  # closed-world
         train_labels = to_categorical(train_labels, num_classes=NUM_MON_SITES)
         test_labels = to_categorical(test_labels, num_classes=NUM_MON_SITES)
     else:
+        # add extra class for unmonitored sites
         train_labels = to_categorical(train_labels, num_classes=NUM_MON_SITES + 1)
         test_labels = to_categorical(test_labels, num_classes=NUM_MON_SITES + 1)
 
@@ -251,10 +252,7 @@ def main(num_mon_sites, num_mon_inst_test, num_mon_inst_train, num_unmon_sites_t
     NUM_UNMON_SITES_TRAIN = num_unmon_sites_train
     NUM_UNMON_SITES = num_unmon_sites_test + num_unmon_sites_train
 
-    if NUM_UNMON_SITES == 0:
-        process(True)
-    else:
-        process(False)
+    process()
 
 
 if __name__ == "__main__":
