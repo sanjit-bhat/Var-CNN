@@ -13,7 +13,10 @@ NUM_UNMON_SITES_TRAIN = 3500
 NUM_UNMON_SITES = NUM_UNMON_SITES_TEST + NUM_UNMON_SITES_TRAIN
 
 
-def find_accuracy(is_closed, predictions, actual, min_confidence):
+def find_accuracy(predictions, actual, min_confidence):
+    """Compute TPR and FPR based on softmax output predictions, one-hot encodings for the correct classes,
+    and the minimum confidence threshold."""
+
     # calculate class with highest probability
     uncertain_predictions = np.argmax(predictions, axis=1)
     actual = np.argmax(actual, axis=1)
@@ -40,7 +43,7 @@ def find_accuracy(is_closed, predictions, actual, min_confidence):
                 sens_correct += 1
 
     tpr = sens_correct / (NUM_MON_SITES * NUM_MON_INST_TEST) * 100
-    if is_closed:
+    if NUM_UNMON_SITES == 0:  # closed-world
         fpr = 0
     else:
         fpr = insens_as_sens / NUM_UNMON_SITES_TEST * 100
@@ -48,7 +51,7 @@ def find_accuracy(is_closed, predictions, actual, min_confidence):
     return "TPR: %f, FPR: %f" % (tpr, fpr)
 
 
-def main(num_sens_sites, num_sens_inst_test, num_sens_inst_train, num_insens_sites_test, num_insens_sites_train):
+def main(num_mon_sites, num_mon_inst_test, num_mon_inst_train, num_unmon_sites_test, num_unmon_sites_train):
     global NUM_MON_SITES
     global NUM_MON_INST_TEST
     global NUM_MON_INST_TRAIN
@@ -57,13 +60,13 @@ def main(num_sens_sites, num_sens_inst_test, num_sens_inst_train, num_insens_sit
     global NUM_UNMON_SITES_TRAIN
     global NUM_UNMON_SITES
 
-    NUM_SENS_SITES = num_sens_sites
-    NUM_SENS_INST_TEST = num_sens_inst_test
-    NUM_SENS_INST_TRAIN = num_sens_inst_train
-    NUM_SENS_INST = num_sens_inst_test + num_sens_inst_train
-    NUM_INSENS_SITES_TEST = num_insens_sites_test
-    NUM_INSENS_SITES_TRAIN = num_insens_sites_train
-    NUM_INSENS_SITES = num_insens_sites_test + num_insens_sites_train
+    NUM_MON_SITES = num_mon_sites
+    NUM_MON_INST_TEST = num_mon_inst_test
+    NUM_MON_INST_TRAIN = num_mon_inst_train
+    NUM_MON_INST = num_mon_inst_test + num_mon_inst_train
+    NUM_UNMON_SITES_TEST = num_unmon_sites_test
+    NUM_UNMON_SITES_TRAIN = num_unmon_sites_train
+    NUM_UNMON_SITES = num_unmon_sites_test + num_unmon_sites_train
 
     prediction_dir = "/home/primes/attack_scripts/open_world/predictions"
     data_dir = "/home/primes/attack_scripts/open_world/preprocess"
@@ -73,21 +76,22 @@ def main(num_sens_sites, num_sens_inst_test, num_sens_inst_train, num_insens_sit
     dir_predictions = np.load(r"%s/dir_model.npy" % prediction_dir)
     test_labels = np.load(r"%s/test_labels.npy" % data_dir)
 
+    # Var-CNN ensemble predictions are just a simple average of Var-CNN time and direction softmax outputs
     ensemble_predictions = np.add(time_predictions, dir_predictions)
     ensemble_predictions = np.divide(ensemble_predictions, 2)
 
-    if NUM_INSENS_SITES == 0:  # closed-world
+    if NUM_UNMON_SITES == 0:  # closed-world
         print("min_confidence=", 0.)
-        print("time model results:", find_accuracy(True, time_predictions, test_labels, 0.))
-        print("dir model results:", find_accuracy(True, dir_predictions, test_labels, 0.))
-        print("ensemble results:", find_accuracy(True, ensemble_predictions, test_labels, 0.))
+        print("time model results:", find_accuracy(time_predictions, test_labels, 0.))
+        print("dir model results:", find_accuracy(dir_predictions, test_labels, 0.))
+        print("ensemble results:", find_accuracy(ensemble_predictions, test_labels, 0.))
     else:
         for conf in range(0, 11):
             conf *= 0.1
             print("min_confidence=", conf)
-            print("time model results:", find_accuracy(False, time_predictions, test_labels, conf))
-            print("dir model results:", find_accuracy(False, dir_predictions, test_labels, conf))
-            print("ensemble results:", find_accuracy(False, ensemble_predictions, test_labels, conf))
+            print("time model results:", find_accuracy(time_predictions, test_labels, conf))
+            print("dir model results:", find_accuracy(dir_predictions, test_labels, conf))
+            print("ensemble results:", find_accuracy(ensemble_predictions, test_labels, conf))
 
 
 if __name__ == '__main__':
