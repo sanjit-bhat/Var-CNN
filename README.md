@@ -42,3 +42,9 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 ## Attack usage
 1. To re-create the open- and closed- world results of our paper, execute run_open_closed_world.py: ```python run_open_closed_world.py```. This script will run open- and closed- world scenarios 10 times and output the results for CNN-Var time, direction, and ensemble at varying minimum confidence levels. 
 2. By changing the parameters of the .main calls inside run_open_closed_world.py, you can re-produce our experiment with the trained unmonitored sites.
+
+## Contact
+sanjit.bhat at gmail.com  
+davidboxboro at gmail.com
+kwonal at mid.edu
+Any discussions, suggestions and questions are welcome!
