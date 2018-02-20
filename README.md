@@ -1,4 +1,4 @@
-# Variations on convolutional neural networks (Var-CNN) and dynamic flows (DynaFlow)
+# Var-CNN and DynaFlow
 
 This repository contains the code and dataset for the attack model and defense described in the following paper
 
@@ -34,7 +34,7 @@ DynaFlow is a new countermeasure based on dynamically adjusting flows to protect
 2. In the same directory, make folders called preprocess and predictions. These will be used to store the randomized train/test
 sets and the final softmax outputs of the packet time and packet direction models.
 3. For preprocess_data.py, change data_loc to point to the location of Wang et al.'s k-NN data set.
-You can download Wang et al.'s dataset here: https://www.cse.ust.hk/~taow/wf/data/.
+You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/data/).
 4. For var_cnn_ensemble.py, change the 2 instances of data_dir to point to the location of the preprocess folder.
 5. For evaluate_ensemble, change prediction_dir and data_dir to point to the location of the prediction and preprocess folders.
 
