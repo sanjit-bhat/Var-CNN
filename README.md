@@ -45,9 +45,6 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 
 ## Contact
 sanjit.bhat at gmail.com
-
 davidboxboro at gmail.com
-
 kwonal at mit.edu
-
-Any discussions, suggestions and questions are welcome!
+Any discussions, suggestions, and questions are welcome!
