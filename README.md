@@ -44,7 +44,10 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 2. By changing the parameters of the .main calls inside run_open_closed_world.py, you can re-produce our experiment with the trained unmonitored sites.
 
 ## Contact
-sanjit.bhat at gmail.com  
+sanjit.bhat at gmail.com
+
 davidboxboro at gmail.com
-kwonal at mid.edu
+
+kwonal at mit.edu
+
 Any discussions, suggestions and questions are welcome!
