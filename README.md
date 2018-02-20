@@ -3,7 +3,8 @@
 This repository contains the code and dataset for the attack model and defense described in the following paper
 
 [Var-CNN and DynaFlow: Improved Attacks and Defenses for Website Fingerprinting](https://arxiv.org)
-Sanjit Bhat, David Lu, [Albert Kwon](http://www.albertkwon.com) and [Srinivas Devadas](https://people.csail.mit.edu/devadas/).
+
+Sanjit Bhat, David Lu, [Albert Kwon](http://www.albertkwon.com), and [Srinivas Devadas](https://people.csail.mit.edu/devadas/).
 
 ### Citation
 If you find Var-CNN or DynaFlow useful in your research, please consider citing:
