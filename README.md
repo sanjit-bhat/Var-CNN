@@ -44,7 +44,7 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 1. To re-create the open- and closed- world results of our paper, execute run_open_closed_world.py: ```python run_open_closed_world.py```. This script will run open- and closed- world scenarios 10 times and output the results for CNN-Var time, direction, and ensemble at varying minimum confidence levels. 
 2. By changing the parameters of the .main calls inside run_open_closed_world.py, you can re-produce our experiment with the trained unmonitored sites.
 
-## Defense setup and usage  
+## Defense setup  
 1. Clone this repo: ```git clone https://github.com/sanjit-bhat/Var-CNN--DynaFlow```
 2. Make a directory called choices.
 
@@ -52,7 +52,7 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 1. To re-create the defense results of our paper, run ```python dynaflow.py```. This will run all the configurations of the defense in both the open- and closed-worlds, creating the defended traces. The condensed version of each defended trace will be saved to the choices folder. The defense results will be saved to dynaflow.results.
 2. Run ```python bounds_closed.py``` and ```python bounds_open.py``` to attain the metrics of the optimal attacker on each defended dataset. 
 3. To run Var-CNN on a DynaFlow-defended dataset, change preprocess_data.py to point to the location of the defended dataset. 
-4. To run Wang et al.'s k-NN (https://www.cse.ust.hk/~taow/wf/attacks/) and Hayes' k-FP (https://github.com/jhayes14/k-FP), download their attacks and follow their documentation.  
+4. To run Wang et al.'s [k-NN](https://www.cse.ust.hk/~taow/wf/attacks/) and Hayes et al.'s [k-FP](https://github.com/jhayes14/k-FP), download their attacks and follow their documentation.  
 5. To run other configurations of your choice, change the parameters at the bottom of dynaflow.py. Make sure the paths at the bottom of bounds_closed.py and bounds_open.py correspond with those found in dynaflow.py. 
  
 
