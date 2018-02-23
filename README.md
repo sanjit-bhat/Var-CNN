@@ -47,6 +47,13 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 1. To re-create the open- and closed-world results of our paper, run ```python run_open_closed_world.py```. This script will run open- and closed-world scenarios 10 times and output the results for CNN-Var time, direction, and ensemble at varying minimum confidence levels. 
 2. By changing the parameters of the .main calls inside ```run_open_closed_world.py```, you can re-produce our experiment with the trained unmonitored sites.
 
+### Results on Wang et al. data set
+Attack | Accuracy (Closed) | TPR (Open) | FPR (Open)
+-------|:-------:|:--------:|:--------:|
+$k$-FP |1.0M |7.00 |5.24
+Var-CNN Ensemble (conf. threshold = 0.0) | 7.0M |5.77 |4.10
+Var-CNN Ensemble (conf. threshold = 0.5) |27.2M |5.83 |3.74
+
 ## DynaFlow setup  
 1. Clone this repo: ```git clone https://github.com/sanjit-bhat/Var-CNN--DynaFlow```
 2. Make a directory called ```choices```.
