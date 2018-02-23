@@ -44,6 +44,17 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 1. To re-create the open- and closed- world results of our paper, execute run_open_closed_world.py: ```python run_open_closed_world.py```. This script will run open- and closed- world scenarios 10 times and output the results for CNN-Var time, direction, and ensemble at varying minimum confidence levels. 
 2. By changing the parameters of the .main calls inside run_open_closed_world.py, you can re-produce our experiment with the trained unmonitored sites.
 
+## Defense setup and usage  
+1. Clone this repo: ```git clone https://github.com/sanjit-bhat/Var-CNN--DynaFlow```
+2. Make a directory named "choices".
+
+## Defense usage
+1. To re-create the defense results of our paper, run ```python dynaflow.py```. This will run all the configurations of the defense in both the open- and closed-worlds, creating the defended traces. The identity of each defended trace will be saved to the "choices" folder.
+2. Run ```python bounds_closed.py``` and ```python bounds_open.py``` to attain the metrics of the optimal attacker on each defended dataset. 
+3. To run other configurations, change the parameters at the bottom of dynaflow.py and make the appropriate name changes at the bottom of bounds_closed.py and bounds_open.py 
+ 
+
+
 ## Contact
 sanjit.bhat at gmail.com
 
