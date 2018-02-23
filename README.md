@@ -60,8 +60,13 @@ Var-CNN Ensemble (conf. threshold = 0.5) | 93.2 ± 0.5| 90.9 ± 0.5 | 0.3 ± 0.1
 ## DynaFlow
 ### Setup  
 1. Clone this repo: ```git clone https://github.com/sanjit-bhat/Var-CNN--DynaFlow```
-2. Make a directory called ```choices```.
-3. Make a directory called ```batches``` and put ```batch-primes```(found here) inside that directory.  
+2. Inside, make sub-directories called ```choices``` and ```batches```.
+3. Inside ```batches```, run 
+   ```shell
+   wget "https://Albert's_link_here"
+   unzip file_name_here.zip -d batch-primes
+   ```
+   to download our data set and unzip it to the folder ```batch-primes``` inside ```batches```.  
 
 ### Usage
 1. To re-create the defense results of our paper, run ```python dynaflow.py```. This will run all the configurations of the defense in both the open- and closed-worlds, creating the defended traces. The condensed version of each defended trace will be saved to the ```choices``` folder. The defense results will be saved to ```dynaflow.results```.
