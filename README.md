@@ -63,8 +63,8 @@ Var-CNN Ensemble (conf. threshold = 0.5) | 93.2 ± 0.5| 90.9 ± 0.5 | 0.3 ± 0.1
 2. Inside, make sub-directories called ```choices``` and ```batches```.
 3. Inside ```batches```, run 
    ```shell
-   wget "https://Albert's_link_here"
-   unzip file_name_here.zip -d batch-primes
+   wget "http://people.csail.mit.edu/kwonal/batch-primes.zip"
+   unzip batch-primes.zip
    ```
    to download our data set and unzip it to the folder ```batch-primes``` inside ```batches```.  
 
