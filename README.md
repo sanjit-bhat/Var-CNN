@@ -51,7 +51,7 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 ## Defense usage
 1. To re-create the defense results of our paper, run ```python dynaflow.py```. This will run all the configurations of the defense in both the open- and closed-worlds, creating the defended traces. The identity of each defended trace will be saved to the "choices" folder.
 2. Run ```python bounds_closed.py``` and ```python bounds_open.py``` to attain the metrics of the optimal attacker on each defended dataset. 
-3. To run other configurations, change the parameters at the bottom of dynaflow.py and make the appropriate name changes at the bottom of bounds_closed.py and bounds_open.py 
+3. To run other configurations, change the parameters at the bottom of dynaflow.py. Make sure the paths at the bottom of bounds_closed.py and bounds_open.py correspond with those found in dynaflow.py. 
  
 
 
