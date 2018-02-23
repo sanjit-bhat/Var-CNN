@@ -41,7 +41,7 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 5. For ```evaluate_ensemble```, change `prediction_dir` and `data_dir` to point to the location of the ```prediction``` and ```preprocess``` directories.
 
 ## Attack usage
-1. To re-create the open- and closed- world results of our paper, run ```python run_open_closed_world.py```. This script will run open- and closed-world scenarios 10 times and output the results for CNN-Var time, direction, and ensemble at varying minimum confidence levels. 
+1. To re-create the open- and closed-world results of our paper, run ```python run_open_closed_world.py```. This script will run open- and closed-world scenarios 10 times and output the results for CNN-Var time, direction, and ensemble at varying minimum confidence levels. 
 2. By changing the parameters of the .main calls inside ```run_open_closed_world.py```, you can re-produce our experiment with the trained unmonitored sites.
 
 ## Defense setup  
@@ -59,10 +59,10 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 
 
 ## Contact
-sanjit.bhat at gmail.com
+sanjit.bhat (at) gmail.com
 
-davidboxboro at gmail.com
+davidboxboro (at) gmail.com
 
-kwonal at mit.edu
+kwonal (at) mit.edu
 
 Any discussions, suggestions, and questions are welcome!
