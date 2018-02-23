@@ -34,7 +34,8 @@ Figure 2: Full Var-CNN architecture.
 1. Ensure that you have a functioning machine with an NVIDIA GPU inside it. Without a GPU, the model will take significantly longer to run on a CPU. 
 2. To set up the relevent software stack, see the instructions [here](https://blog.slavv.com/the-1700-great-deep-learning-box-assembly-setup-and-benchmarks-148c5ebe6415) under the "Software Setup" section. For our experiments, we used Ubuntu 16.04 LTS, CUDA 8.0, CuDNN v6, and TensorFlow 1.3.0 as a backend for Keras 2.0.8.
 
-## Var-CNN setup
+## Var-CNN
+### Setup
 1. Clone this repo: ```git clone https://github.com/sanjit-bhat/Var-CNN--DynaFlow```
 2. In the same directory, make sub-directories called ```preprocess``` and ```predictions```. These will be used to store the randomized train/test
 sets and the final softmax outputs of the packet time and packet direction models.
@@ -43,11 +44,11 @@ You can download Wang et al.'s data set [here](https://www.cse.ust.hk/~taow/wf/d
 4. For ```var_cnn_ensemble.py```, change the 2 instances of ```data_dir``` to point to the location of the ```preprocess``` directory.
 5. For ```evaluate_ensemble```, change `prediction_dir` and `data_dir` to point to the location of the ```prediction``` and ```preprocess``` directories.
 
-## Var-CNN usage
+### Usage
 1. To re-create the open- and closed-world results of our paper, run ```python run_open_closed_world.py```. This script will run open- and closed-world scenarios 10 times and output the results for Var-CNN time, direction, and ensemble at varying minimum confidence levels. 
 2. By changing the parameters of the .main calls inside ```run_open_closed_world.py```, you can re-produce our experiment with the trained unmonitored sites.
 
-## Results on Wang et al. data set
+### Results on Wang et al. data set
 Attack | Accuracy (Closed) | TPR (Open) | FPR (Open)
 -------|:-------:|:--------:|:--------:|
 *k*-NN | 91 ± 3 | 85 ± 4 | 0.6 ± 0.4
@@ -56,12 +57,13 @@ SDAE | 88 | 86 | 2
 Var-CNN Ensemble (conf. threshold = 0.0) | 93.2 ± 0.5 | 93.0 ± 0.5 | 0.7 ± 0.1
 Var-CNN Ensemble (conf. threshold = 0.5) | 93.2 ± 0.5| 90.9 ± 0.5 | 0.3 ± 0.1
 
-## DynaFlow setup  
+## DynaFlow
+### Setup  
 1. Clone this repo: ```git clone https://github.com/sanjit-bhat/Var-CNN--DynaFlow```
 2. Make a directory called ```choices```.
 3. Make a directory called ```batches``` and put ```batch-primes```(found here) inside that directory.  
 
-## DynaFlow usage
+### Usage
 1. To re-create the defense results of our paper, run ```python dynaflow.py```. This will run all the configurations of the defense in both the open- and closed-worlds, creating the defended traces. The condensed version of each defended trace will be saved to the ```choices``` folder. The defense results will be saved to ```dynaflow.results```.
 2. Run ```python bounds_closed.py``` and ```python bounds_open.py``` to attain the metrics of the optimal attacker on each defended data set. 
 3. To run Var-CNN on a DynaFlow-defended data set, change ```preprocess_data.py``` to point to the location of the defended data set. 
