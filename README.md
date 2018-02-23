@@ -1,6 +1,6 @@
 # Var-CNN and DynaFlow
 
-This repository contains the code and dataset for the attack model and defense described in the following paper
+This repository contains the code and data set for the attack model and defense described in the following paper
 
 [Var-CNN and DynaFlow: Improved Attacks and Defenses for Website Fingerprinting](https://arxiv.org)
 
@@ -39,15 +39,15 @@ Figure 2: Full Var-CNN architecture.
 2. In the same directory, make sub-directories called ```preprocess``` and ```predictions```. These will be used to store the randomized train/test
 sets and the final softmax outputs of the packet time and packet direction models.
 3. For ```preprocess_data.py```, change ```data_loc``` to point to the location of Wang et al.'s k-NN data set.
-You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/data/).
+You can download Wang et al.'s data set [here](https://www.cse.ust.hk/~taow/wf/data/).
 4. For ```var_cnn_ensemble.py```, change the 2 instances of ```data_dir``` to point to the location of the ```preprocess``` directory.
 5. For ```evaluate_ensemble```, change `prediction_dir` and `data_dir` to point to the location of the ```prediction``` and ```preprocess``` directories.
 
 ## Var-CNN usage
-1. To re-create the open- and closed-world results of our paper, run ```python run_open_closed_world.py```. This script will run open- and closed-world scenarios 10 times and output the results for CNN-Var time, direction, and ensemble at varying minimum confidence levels. 
+1. To re-create the open- and closed-world results of our paper, run ```python run_open_closed_world.py```. This script will run open- and closed-world scenarios 10 times and output the results for Var-CNN time, direction, and ensemble at varying minimum confidence levels. 
 2. By changing the parameters of the .main calls inside ```run_open_closed_world.py```, you can re-produce our experiment with the trained unmonitored sites.
 
-### Results on Wang et al. data set
+## Results on Wang et al. data set
 Attack | Accuracy (Closed) | TPR (Open) | FPR (Open)
 -------|:-------:|:--------:|:--------:|
 *k*-NN | 91 ± 3 | 85 ± 4 | 0.6 ± 0.4
@@ -63,8 +63,8 @@ Var-CNN Ensemble (conf. threshold = 0.5) | 93.2 ± 0.5| 90.9 ± 0.5 | 0.3 ± 0.1
 
 ## DynaFlow usage
 1. To re-create the defense results of our paper, run ```python dynaflow.py```. This will run all the configurations of the defense in both the open- and closed-worlds, creating the defended traces. The condensed version of each defended trace will be saved to the ```choices``` folder. The defense results will be saved to ```dynaflow.results```.
-2. Run ```python bounds_closed.py``` and ```python bounds_open.py``` to attain the metrics of the optimal attacker on each defended dataset. 
-3. To run Var-CNN on a DynaFlow-defended dataset, change ```preprocess_data.py``` to point to the location of the defended dataset. 
+2. Run ```python bounds_closed.py``` and ```python bounds_open.py``` to attain the metrics of the optimal attacker on each defended data set. 
+3. To run Var-CNN on a DynaFlow-defended data set, change ```preprocess_data.py``` to point to the location of the defended data set. 
 4. To run Wang et al.'s [k-NN](https://www.cse.ust.hk/~taow/wf/attacks/) and Hayes et al.'s [k-FP](https://github.com/jhayes14/k-FP), download their attacks and follow their documentation.  
 5. To run other configurations of your choice, change the parameters at the bottom of ```dynaflow.py```. Make sure the paths at the bottom of ```bounds_closed.py``` and ```bounds_open.py``` correspond with those found in ```dynaflow.py```. 
  
