@@ -47,7 +47,7 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 ## DynaFlow setup  
 1. Clone this repo: ```git clone https://github.com/sanjit-bhat/Var-CNN--DynaFlow```
 2. Make a directory called ```choices```.
-3. Make a directory called ```batches``` and put ```batch-primes``` inside that directory.  
+3. Make a directory called ```batches``` and put ```batch-primes```(found here) inside that directory.  
 
 ## DynaFlow usage
 1. To re-create the defense results of our paper, run ```python dynaflow.py```. This will run all the configurations of the defense in both the open- and closed-worlds, creating the defended traces. The condensed version of each defended trace will be saved to the ```choices``` folder. The defense results will be saved to ```dynaflow.results```.
