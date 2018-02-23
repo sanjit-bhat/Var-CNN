@@ -53,7 +53,7 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 2. Run ```python bounds_closed.py``` and ```python bounds_open.py``` to attain the metrics of the optimal attacker on each defended dataset. 
 3. To run Var-CNN on a DynaFlow-defended dataset, change preprocess_data.py to point to the location of the defended dataset. 
 4. To run Wang et al.'s k-NN (https://www.cse.ust.hk/~taow/wf/attacks/) and Hayes' k-FP (https://github.com/jhayes14/k-FP), download their attacks and follow their documentation.  
-5. To run other configurations, change the parameters at the bottom of dynaflow.py. Make sure the paths at the bottom of bounds_closed.py and bounds_open.py correspond with those found in dynaflow.py. 
+5. To run other configurations of your choice, change the parameters at the bottom of dynaflow.py. Make sure the paths at the bottom of bounds_closed.py and bounds_open.py correspond with those found in dynaflow.py. 
  
 
 
