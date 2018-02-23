@@ -35,10 +35,10 @@ Figure 2: Full Var-CNN architecture.
 1. Clone this repo: ```git clone https://github.com/sanjit-bhat/Var-CNN--DynaFlow```
 2. In the same directory, make sub-directories called ```preprocess``` and ```predictions```. These will be used to store the randomized train/test
 sets and the final softmax outputs of the packet time and packet direction models.
-3. For ```preprocess_data.py```, change data_loc to point to the location of Wang et al.'s k-NN data set.
+3. For ```preprocess_data.py```, change ```data_loc``` to point to the location of Wang et al.'s k-NN data set.
 You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/data/).
-4. For ```var_cnn_ensemble.py```, change the 2 instances of data_dir to point to the location of the ```preprocess``` directory.
-5. For ```evaluate_ensemble```, change prediction_dir and data_dir to point to the location of the ```prediction``` and ```preprocess``` directories.
+4. For ```var_cnn_ensemble.py```, change the 2 instances of ```data_dir``` to point to the location of the ```preprocess``` directory.
+5. For ```evaluate_ensemble```, change `prediction_dir` and `data_dir` to point to the location of the ```prediction``` and ```preprocess``` directories.
 
 ## Attack usage
 1. To re-create the open- and closed- world results of our paper, run ```python run_open_closed_world.py```. This script will run open- and closed-world scenarios 10 times and output the results for CNN-Var time, direction, and ensemble at varying minimum confidence levels. 
