@@ -50,11 +50,11 @@ You can download Wang et al.'s dataset [here](https://www.cse.ust.hk/~taow/wf/da
 ### Results on Wang et al. data set
 Attack | Accuracy (Closed) | TPR (Open) | FPR (Open)
 -------|:-------:|:--------:|:--------:|
-$$k$$-NN | 91 | 85 | 0.6
-$$k$$-FP |91 | 88 | 0.5
+*k*-NN | 91 ± 3 | 85 ± 4 | 0.6 ± 0.4
+*k*-FP |91 ± 1 | 88 ± 1 | 0.5 ± 0.1
 SDAE | 88 | 86 | 2
-Var-CNN Ensemble (conf. threshold = 0.0) | 93.2 | 93.0 | 0.7
-Var-CNN Ensemble (conf. threshold = 0.5) | 93.2 | 90.9 | 0.3
+Var-CNN Ensemble (conf. threshold = 0.0) | 93.2 ± 0.5 | 93.0 ± 0.5 | 0.7 ± 0.1
+Var-CNN Ensemble (conf. threshold = 0.5) | 93.2 ± 0.5| 90.9 ± 0.5 | 0.3 ± 0.1
 
 ## DynaFlow setup  
 1. Clone this repo: ```git clone https://github.com/sanjit-bhat/Var-CNN--DynaFlow```
