@@ -67,11 +67,11 @@ def get_tpr(choices_stats_loc):
     tpr = tpr_num / tpr_den
 
     print "Loc:", choices_stats_loc
-    print len(prob_array), len(prob_array[0])
+#    print len(prob_array), len(prob_array[0])
     print "TPR:", tpr, "\n"
 
 
-# sample tests
-for i in range(1, 10):
+# tests
+for i in range(1, 12):
     get_tpr("choices-primes-defended-closed-%s" % i)
 

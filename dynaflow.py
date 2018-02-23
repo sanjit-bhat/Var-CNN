@@ -172,7 +172,7 @@ def run_closed(suffix_2, switch_sizes, m):
 
     print("closed, switch sizes: %s, m: %s, first time gap: %s, poss time gaps: %s, memory: %s\nTOH: %s, BWOH: %s, S: %s\n\n" % (switch_sizes, m, FIRST_TIME_GAP, POSS_TIME_GAPS, MEMORY, toh, bwoh, toh+bwoh))
     
-    results = open("defense.results", "a")  
+    results = open("dynaflow.results", "a")  
     results.write("closed, switch sizes: %s, m: %s, first time gap: %s, poss time gaps: %s, memory: %s\nTOH: %s, BWOH: %s, S: %s\n\n" % (switch_sizes, m, FIRST_TIME_GAP, POSS_TIME_GAPS, MEMORY, toh, bwoh, toh+bwoh))
     results.close()
 
@@ -205,7 +205,7 @@ def run_open(suffix_2, switch_sizes, m):
 
     print("open-mon, switch sizes: %s, m: %s, first time gap: %s, poss time gaps: %s, memory: %s\nTOH: %s, BWOH: %s, S: %s\n\n" % (switch_sizes, m, FIRST_TIME_GAP, POSS_TIME_GAPS, MEMORY, toh, bwoh, toh+bwoh))
     
-    results = open("defense.results", "a")  
+    results = open("dynaflow.results", "a")  
     results.write("open-mon, switch sizes: %s, m: %s, first time gap: %s, poss time gaps: %s, memory: %s\nTOH: %s, BWOH: %s, S: %s\n\n" % (switch_sizes, m, FIRST_TIME_GAP, POSS_TIME_GAPS, MEMORY, toh, bwoh, toh+bwoh))
     results.close()
 
@@ -231,7 +231,7 @@ def run_open(suffix_2, switch_sizes, m):
 
     print("open-unmon, switch sizes: %s, m: %s, first time gap: %s, poss time gaps: %s, memory: %s\nTOH: %s, BWOH: %s, S: %s\n\n" % (switch_sizes, m, FIRST_TIME_GAP, POSS_TIME_GAPS, MEMORY, toh, bwoh, toh+bwoh))
     
-    results = open("defense.results", "a")  
+    results = open("dynaflow.results", "a")  
     results.write("open-unmon, switch sizes: %s, m: %s, first time gap: %s, poss time gaps: %s, memory: %s\nTOH: %s, BWOH: %s, S: %s\n\n" % (switch_sizes, m, FIRST_TIME_GAP, POSS_TIME_GAPS, MEMORY, toh, bwoh, toh+bwoh))
     results.close()
 
@@ -247,6 +247,7 @@ run_closed("-closed-1", [400+100*i for i in range(1000)], 1.002)
 run_closed("-closed-2", [400, 1200, 2000, 2800, 3600, 4400, 5200], 1.02)
 run_closed("-closed-3", [400, 1200, 2000, 2800, 3600, 4400, 5200], 1.1)
 run_closed("-closed-5", [400, 1200, 2000, 2800], 1.1)
+run_closed("-closed-6", [400, 1200, 2000, 2800], 1.2)
 POSS_TIME_GAPS = [0.0015]
 run_closed("-closed-4", [400], 1.2)
 run_closed("-closed-7", [400], 1.02)
@@ -260,6 +261,7 @@ run_open("-open-1", [400+100*i for i in range(1000)], 1.002)
 run_open("-open-2", [400, 1200, 2000, 2800, 3600, 4400, 5200], 1.02)
 run_open("-open-3", [400, 1200, 2000, 2800, 3600, 4400, 5200], 1.1)
 run_open("-open-5", [400, 1200, 2000, 2800], 1.1)
+run_open("-open-6", [400, 1200, 2000, 2800], 1.2)
 POSS_TIME_GAPS = [0.0015]
 run_open("-open-4", [400], 1.2)
 run_open("-open-7", [400], 1.02)

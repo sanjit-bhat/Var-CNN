@@ -2,7 +2,7 @@
 
 import math
 
-def get_tpr_fpr(prop, choices_stats_loc):
+def get_stats(prop, choices_stats_loc):
     """Computes TPR, FPR, precision, F1-score of optimal attacker (in open-world)."""
 
     choices_stats = open(choices_stats_loc, "r")
@@ -94,16 +94,16 @@ def get_tpr_fpr(prop, choices_stats_loc):
     except:
         f1 = 0
 
-    print "loc", choices_stats_loc    
-    print "TPR", round(tpr,3)
-    print "FPR", round(fpr,3)
-    print "Precision", round(prec,3)
-    print "F1", round(f1,3)
+    print "Loc:", choices_stats_loc    
+    print "TPR:", round(tpr,3)
+    print "FPR:", round(fpr,3)
+    print "Precision:", round(prec,3)
+    print "F1:", round(f1,3)
     print 
 
 
 # sample tests
-for i in range(1,10):
-    get_tpr_fpr(0.5, "choices/choices-primes-defended-open-%s" % (i))
+for i in range(1, 12):
+    get_stats(0.5, "choices/choices-primes-defended-open-%s" % (i))
 
 
