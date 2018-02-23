@@ -22,9 +22,12 @@ Most prior work on website fingerprinting attacks use manually extracted feature
 DynaFlow is a new countermeasure based on dynamically adjusting flows to protect against website fingerprinting attacks. DynaFlow provides a similar level of security as current state-of-the-art and defeats all attacks, including our own, while being over 40% more efﬁcient than existing defenses. 
 
 <img src="https://user-images.githubusercontent.com/26041354/36411425-90260782-15e3-11e8-8022-997fb73707bb.png" width="480">
+
 Figure 1: Var-CNN convolutional feature extractor.
 
+
 <img src="https://user-images.githubusercontent.com/26041354/36411430-9613e8c6-15e3-11e8-9521-b5ce19a4ff80.png" width="480">
+
 Figure 2: Full Var-CNN architecture.
 
 ## Dependencies
