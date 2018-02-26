@@ -32,7 +32,7 @@ Figure 2: Full Var-CNN architecture.
 
 ## Dependencies
 1. Ensure that you have a functioning machine with an NVIDIA GPU inside it. Without a GPU, the model will take significantly longer to run on a CPU. 
-2. To set up the relevent software stack, see the instructions [here](https://blog.slavv.com/the-1700-great-deep-learning-box-assembly-setup-and-benchmarks-148c5ebe6415) under the "Software Setup" section. For our experiments, we used Ubuntu 16.04 LTS, CUDA 8.0, CuDNN v6, and TensorFlow 1.3.0 as a backend for Keras 2.0.8.
+2. To set up the relevent software stack, see the instructions [here](https://blog.slavv.com/the-1700-great-deep-learning-box-assembly-setup-and-benchmarks-148c5ebe6415) under the "Software Setup" section. For our experiments, we used Ubuntu 16.04 LTS, CUDA 8.0, CuDNN v6, Python 3.6.0, and TensorFlow 1.3.0 as a backend for Keras 2.0.8.
 
 ## Var-CNN
 ### Setup
