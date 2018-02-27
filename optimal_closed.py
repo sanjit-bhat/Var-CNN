@@ -2,6 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+# Optimal attacker accuracy -- closed-world
+
 import math
 
 def get_tpr(choices_stats_loc):
