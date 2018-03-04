@@ -10,8 +10,9 @@ Sanjit Bhat, David Lu, [Albert Kwon](http://www.albertkwon.com), and [Srinivas D
 If you find Var-CNN or DynaFlow useful in your research, please consider citing:
 
 	@article{bhat18,
-	  title={Var-CNN and DynaFlow: Improved Attacks and Defenses for Website Fingerprinting},
+	  title={{V}ar-{CNN} and {D}yna{F}low: {I}mproved {A}ttacks and {D}efenses for {W}ebsite {F}ingerprinting},
 	  author={Bhat, Sanjit and Lu, David and Kwon, Albert and Devadas, Srinivas},
+	  eprint={1802.10215},
 	  journal={arXiv},
 	  year={2018}
 	}
