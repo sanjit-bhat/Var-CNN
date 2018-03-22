@@ -10,7 +10,7 @@ This repository contains the code and data set for the attack model and defense 
 If you find Var-CNN or DynaFlow useful in your research, please consider citing:
 
 	@article{bhat18,
-	  title={{V}ar-{CNN} and {D}yna{F}low: {I}mproved {A}ttacks and {D}efenses for {W}ebsite {F}ingerprinting},
+	  title={{Var-CNN and DynaFlow: Improved Attacks and Defenses for Website Fingerprinting}},
 	  author={Bhat, Sanjit and Lu, David and Kwon, Albert and Devadas, Srinivas},
 	  eprint={1802.10215},
 	  journal={arXiv},
