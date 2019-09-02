@@ -2,258 +2,229 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from keras.preprocessing.sequence import pad_sequences
-from keras.utils.np_utils import to_categorical
-
 import numpy as np
-import random as rn
-import gc
+import time
+import random
+import h5py
+import json
 import os
-import shutil
-
-NUM_MON_SITES = 100
-NUM_MON_INST_TEST = 30
-NUM_MON_INST_TRAIN = 60
-NUM_MON_INST = NUM_MON_INST_TEST + NUM_MON_INST_TRAIN
-NUM_UNMON_SITES_TEST = 5500
-NUM_UNMON_SITES_TRAIN = 3500
-NUM_UNMON_SITES = NUM_UNMON_SITES_TEST + NUM_UNMON_SITES_TRAIN
-
-seq_length = 4096
-
-data_loc = "/home/primes/datasets/knndata/batch"
+from tqdm import tqdm
+import wang_to_varcnn
+from keras.utils.np_utils import to_categorical
+from sklearn.preprocessing import StandardScaler
 
 
-def release_list(a_list):
-    """Free a_list from memory"""
-    del a_list[:]
-    del a_list
+def main(config):
+    """Preprocesses data from all_{}_world.npz and creates .h5 data files.
 
+    Reads in data, performs randomized split into training/test sets,
+    calculates inter-packet timings and metadata, pads/truncates sequences,
+    creates one-hot encodings of labels, and saves all this information to the
+    preprocess folder.
+    """
 
-def process():
-    """Read in data, perform randomized split into train/test sets, calculate
-    inter-packet timings and metadata, pad/truncate sequences, create one-hot encodings of labels,
-    and save all this information to the preprocess folder."""
+    num_mon_sites = config['num_mon_sites']
+    num_mon_inst_test = config['num_mon_inst_test']
+    num_mon_inst_train = config['num_mon_inst_train']
+    num_mon_inst = num_mon_inst_test + num_mon_inst_train
+    num_unmon_sites_test = config['num_unmon_sites_test']
+    num_unmon_sites_train = config['num_unmon_sites_train']
+    num_unmon_sites = num_unmon_sites_test + num_unmon_sites_train
+
+    inter_time = config['inter_time']
+    scale_metadata = config['scale_metadata']
+    data_dir = config['data_dir']
+    mon_data_loc = data_dir + 'all_closed_world.npz'
+    unmon_data_loc = data_dir + 'all_open_world.npz'
+    if not os.path.exists(mon_data_loc) or not os.path.exists(unmon_data_loc):
+        wang_to_varcnn.main(config)
+
+    print('Starting %d_%d_%d_%d.h5' % (num_mon_sites, num_mon_inst,
+                                       num_unmon_sites_train,
+                                       num_unmon_sites_test))
+    start = time.time()
 
     train_seq_and_labels = []
     test_seq_and_labels = []
 
-    print("reading data - sens")
+    print('reading monitored data')
+    mon_dataset = np.load(mon_data_loc)
+    mon_dir_seq = mon_dataset['dir_seq']
+    mon_time_seq = mon_dataset['time_seq']
+    mon_metadata = mon_dataset['metadata']
+    mon_labels = mon_dataset['labels']
 
-    for site in range(0, NUM_MON_SITES):
-        all_instances = []
-
-        for sense in range(0, NUM_MON_INST):
-            path = data_loc + "/%d-%d" % (site, sense)
-            f = open(path)
-            cell_time_and_dir = f.read().split()
-
-            cell_time = []
-            cell_dir = []
-
-            # Metadata measurements
-            total_time = float(cell_time_and_dir[len(cell_time_and_dir) - 2])
-            total_outgoing = 0  # 1
-            total_incoming = 0  # -1
-
-            for i, value in enumerate(cell_time_and_dir):
-                packet_num = i / 2
-                if i % 2 == 0:
-                    if packet_num < 4100:
-                        cell_time.append(float(value))
-                else:
-                    if packet_num < 4100:
-                        cell_dir.append(float(value))
-
-                    if float(value) == 1.:
-                        total_outgoing += 1
-                    else:
-                        total_incoming += 1
-
-            total_packets = total_outgoing + total_incoming
-            metadata = [total_time, total_packets / total_time,
-                        total_packets, total_outgoing, total_incoming, total_outgoing / total_packets,
-                        total_incoming / total_packets]
-
-            all_instances.append([cell_time, cell_dir, metadata])
-
-        # shuffling instances ensures no bias among instances in train and validation/test
-        rn.shuffle(all_instances)
-
-        # split instances into train and validation/test sets
-        for sense in range(0, NUM_MON_INST):
-            if sense < NUM_MON_INST_TRAIN:
-                train_seq_and_labels.append([all_instances[sense][0], all_instances[sense][1],
-                                             all_instances[sense][2], site])
+    mon_site_data = {}
+    mon_site_labels = {}
+    print('getting enough monitored websites')
+    for dir_seq, time_seq, metadata, site_name \
+            in tqdm(zip(mon_dir_seq, mon_time_seq, mon_metadata, mon_labels)):
+        if site_name not in mon_site_data:
+            if len(mon_site_data) >= num_mon_sites:
+                continue
             else:
-                test_seq_and_labels.append([all_instances[sense][0], all_instances[sense][1],
-                                            all_instances[sense][2], site])
+                mon_site_data[site_name] = []
+                mon_site_labels[site_name] = len(mon_site_labels)
 
-    print("reading data - insens")
+        mon_site_data[site_name].append(
+            [dir_seq, time_seq, metadata, mon_site_labels[site_name]])
 
-    all_insens = []
-    for site in range(0, NUM_UNMON_SITES):
-        path = data_loc + "/%d" % site
-        f = open(path)
-        cell_time_and_dir = f.read().split()
-
-        cell_time = []
-        cell_dir = []
-
-        # Metadata measurements
-        total_time = float(cell_time_and_dir[len(cell_time_and_dir) - 2])
-        total_outgoing = 0  # 1
-        total_incoming = 0  # -1
-
-        for i, value in enumerate(cell_time_and_dir):
-            packet_num = i / 2
-            if i % 2 == 0:
-                if packet_num < 4100:
-                    cell_time.append(float(value))
+    print('randomly choosing instances for training and test sets')
+    assert len(mon_site_data) == num_mon_sites
+    for instances in tqdm(mon_site_data.values()):
+        random.shuffle(instances)
+        assert len(instances) >= num_mon_inst
+        for inst_num, all_data in enumerate(instances):
+            if inst_num < num_mon_inst_train:
+                train_seq_and_labels.append(all_data)
+            elif inst_num < num_mon_inst:
+                test_seq_and_labels.append(all_data)
             else:
-                if packet_num < 4100:
-                    cell_dir.append(float(value))
+                break
 
-                if float(value) == 1.:
-                    total_outgoing += 1
-                else:
-                    total_incoming += 1
+    del mon_dataset, mon_dir_seq, mon_time_seq, mon_metadata, \
+        mon_labels, mon_site_data, mon_site_labels
 
-        total_packets = total_outgoing + total_incoming
-        metadata = [total_time, total_packets / total_time,
-                    total_packets, total_outgoing, total_incoming, total_outgoing / total_packets,
-                    total_incoming / total_packets]
+    print('reading unmonitored data')
 
-        all_insens.append([cell_time, cell_dir, metadata])
+    unmon_dataset = np.load(unmon_data_loc)
+    unmon_dir_seq = unmon_dataset['dir_seq']
+    unmon_time_seq = unmon_dataset['time_seq']
+    unmon_metadata = unmon_dataset['metadata']
 
-    # shuffling instances ensures no bias among instances in train and validation/test
-    rn.shuffle(all_insens)
+    unmon_site_data = [[dir_seq, time_seq, metadata, num_mon_sites] for
+                       dir_seq, time_seq, metadata in
+                       zip(unmon_dir_seq, unmon_time_seq, unmon_metadata)]
 
-    # split instances into train and validation/test set
-    for insens in range(0, NUM_UNMON_SITES):
-        if insens < NUM_UNMON_SITES_TRAIN:
-            train_seq_and_labels.append([all_insens[insens][0], all_insens[insens][1],
-                                         all_insens[insens][2], NUM_MON_SITES])
+    print('randomly choosing unmonitored instances for training and test sets')
+    random.shuffle(unmon_site_data)
+    assert len(unmon_site_data) >= num_unmon_sites
+    for inst_num, all_data in tqdm(enumerate(unmon_site_data)):
+        if inst_num < num_unmon_sites_train:
+            train_seq_and_labels.append(all_data)
+        elif inst_num < num_unmon_sites:
+            test_seq_and_labels.append(all_data)
         else:
-            test_seq_and_labels.append([all_insens[insens][0], all_insens[insens][1],
-                                        all_insens[insens][2], NUM_MON_SITES])
+            break
 
-    print("processing data")
+    del unmon_dataset, unmon_dir_seq, unmon_time_seq, \
+        unmon_metadata, unmon_site_data
 
-    # currently lists have randomly-arranged instances in order of site. Need to take site dependency out
-    rn.shuffle(train_seq_and_labels)
-    rn.shuffle(test_seq_and_labels)
+    print('processing data')
 
-    train_time = []
+    # Removes mon site ordering
+    random.shuffle(train_seq_and_labels)
+    random.shuffle(test_seq_and_labels)
+
     train_dir = []
+    train_time = []
     train_metadata = []
     train_labels = []
 
-    test_time = []
     test_dir = []
+    test_time = []
     test_metadata = []
     test_labels = []
 
-    # extract sequences from randomized train/test sets
-    for time_seq, dir_seq, metadata, label in train_seq_and_labels:
-        train_time.append(time_seq)
+    for dir_seq, time_seq, metadata, label in train_seq_and_labels:
         train_dir.append(dir_seq)
+        train_time.append(time_seq)
         train_metadata.append(metadata)
         train_labels.append(label)
-    for time_seq, dir_seq, metadata, label in test_seq_and_labels:
-        test_time.append(time_seq)
+    for dir_seq, time_seq, metadata, label in test_seq_and_labels:
         test_dir.append(dir_seq)
+        test_time.append(time_seq)
         test_metadata.append(metadata)
         test_labels.append(label)
 
-    # free randomized sets from memory to conserve system RAM
-    release_list(all_insens)
-    release_list(train_seq_and_labels)
-    release_list(test_seq_and_labels)
-    gc.collect()
+    del train_seq_and_labels, test_seq_and_labels
 
+    train_dir = np.array(train_dir)
+    train_time = np.array(train_time)
     train_metadata = np.array(train_metadata)
+
+    test_dir = np.array(test_dir)
+    test_time = np.array(test_time)
     test_metadata = np.array(test_metadata)
 
-    # pad and truncate sequences to desired len
-    train_time = pad_sequences(train_time, maxlen=seq_length, dtype='float32', padding='post', truncating='post')
-    train_dir = pad_sequences(train_dir, maxlen=seq_length, dtype='float32', padding='post', truncating='post')
-    test_time = pad_sequences(test_time, maxlen=seq_length, dtype='float32', padding='post', truncating='post')
-    test_dir = pad_sequences(test_dir, maxlen=seq_length, dtype='float32', padding='post', truncating='post')
+    # Converts from absolute times to inter-packet times.
+    # Each spot holds time diff between curr packet and prev packet
+    if inter_time:
+        inter_time_train = np.zeros_like(train_time)
+        inter_time_train[:, 1:] = train_time[:, 1:] - train_time[:, :-1]
+        train_time = inter_time_train
 
-    # calculate inter-packet timings - time difference between consecutive packets
-    train_time_dleft = np.zeros(train_time.shape)  # for current packet, time difference bw/ prev packet and current
-    train_time_dright = np.zeros(train_time.shape)  # for current packet, time difference bw/ next packet and current
-    for row in range(train_time.shape[0]):
-        for col in range(1, train_time.shape[1]):
-            train_time_dleft[row][col] = train_time[row][col] - train_time[row][col - 1]
-        for col in range(0, train_time.shape[1] - 1):
-            train_time_dright[row][col] = train_time[row][col + 1] - train_time[row][col]
+        inter_time_test = np.zeros_like(test_time)
+        inter_time_test[:, 1:] = test_time[:, 1:] - test_time[:, :-1]
+        test_time = inter_time_test
 
-    test_time_dleft = np.zeros(test_time.shape)
-    test_time_dright = np.zeros(test_time.shape)
-    for row in range(test_time.shape[0]):
-        for col in range(1, test_time.shape[1]):
-            test_time_dleft[row][col] = test_time[row][col] - test_time[row][col - 1]
-        for col in range(0, test_time.shape[1] - 1):
-            test_time_dright[row][col] = test_time[row][col + 1] - test_time[row][col]
+    # Reshape to add 3rd dim for CNN input
+    train_dir = np.reshape(train_dir,
+                           (train_dir.shape[0], train_dir.shape[1], 1))
+    test_dir = np.reshape(test_dir, (test_dir.shape[0], test_dir.shape[1], 1))
 
-    # stacking makes these sequences easier to save
-    train_seq = np.stack((train_time, train_time_dleft, train_time_dright, train_dir), axis=-1)
-    test_seq = np.stack((test_time, test_time_dleft, test_time_dright, test_dir), axis=-1)
+    train_time = np.reshape(train_time,
+                            (train_time.shape[0], train_time.shape[1], 1))
+    test_time = np.reshape(test_time,
+                           (test_time.shape[0], test_time.shape[1], 1))
 
-    # one-hot encoding of labels
-    if NUM_UNMON_SITES == 0:  # closed-world
-        train_labels = to_categorical(train_labels, num_classes=NUM_MON_SITES)
-        test_labels = to_categorical(test_labels, num_classes=NUM_MON_SITES)
-    else:
-        # add extra class for unmonitored sites
-        train_labels = to_categorical(train_labels, num_classes=NUM_MON_SITES + 1)
-        test_labels = to_categorical(test_labels, num_classes=NUM_MON_SITES + 1)
+    if scale_metadata:
+        metadata_scaler = StandardScaler()
+        train_metadata = metadata_scaler.fit_transform(train_metadata)
+        test_metadata = metadata_scaler.transform(test_metadata)
 
-    print("training data stats: ")
-    print(train_seq.shape)
+    # One-hot encoding of labels, using one more class for
+    # unmonitored sites if in open-world
+    num_classes = num_mon_sites if num_unmon_sites == 0 else num_mon_sites + 1
+    train_labels = to_categorical(train_labels, num_classes=num_classes)
+    test_labels = to_categorical(test_labels, num_classes=num_classes)
+
+    print('training data stats:')
+    print(train_dir.shape)
+    print(train_time.shape)
     print(train_metadata.shape)
     print(train_labels.shape)
-    
-    print("testing data stats: ")
-    print(test_seq.shape)
+
+    print('testing data stats:')
+    print(test_dir.shape)
+    print(test_time.shape)
     print(test_metadata.shape)
     print(test_labels.shape)
-    
-    print("saving data")
-    save_dir = "preprocess"
-    shutil.rmtree(save_dir)  # delete save_dir so we don't overlap data
-    os.mkdir(save_dir)
 
-    np.save(file=r"%s/train_seq" % save_dir, arr=train_seq)
-    np.save(file=r"%s/train_metadata" % save_dir, arr=train_metadata)
-    np.save(file=r"%s/train_labels" % save_dir, arr=train_labels)
+    print('saving data')
+    with h5py.File('%s%d_%d_%d_%d.h5' %
+                   (data_dir, num_mon_sites, num_mon_inst,
+                    num_unmon_sites_train, num_unmon_sites_test), 'w') as f:
+        f.create_group('training_data')
+        f.create_group('validation_data')
+        f.create_group('test_data')
+        for ds_name, arr in [['dir_seq', train_dir],
+                             ['time_seq', train_time],
+                             ['metadata', train_metadata],
+                             ['labels', train_labels]]:
+            f.create_dataset('training_data/' + ds_name,
+                             data=arr[:int(0.95 * len(arr))])
+        for ds_name, arr in [['dir_seq', train_dir],
+                             ['time_seq', train_time],
+                             ['metadata', train_metadata],
+                             ['labels', train_labels]]:
+            f.create_dataset('validation_data/' + ds_name,
+                             data=arr[int(0.95 * len(arr)):])
+        for ds_name, arr in [['dir_seq', test_dir],
+                             ['time_seq', test_time],
+                             ['metadata', test_metadata],
+                             ['labels', test_labels]]:
+            f.create_dataset('test_data/' + ds_name,
+                             data=arr)
 
-    np.save(file=r"%s/test_seq" % save_dir, arr=test_seq)
-    np.save(file=r"%s/test_metadata" % save_dir, arr=test_metadata)
-    np.save(file=r"%s/test_labels" % save_dir, arr=test_labels)
-
-
-def main(num_mon_sites, num_mon_inst_test, num_mon_inst_train, num_unmon_sites_test, num_unmon_sites_train):
-    global NUM_MON_SITES
-    global NUM_MON_INST_TEST
-    global NUM_MON_INST_TRAIN
-    global NUM_MON_INST
-    global NUM_UNMON_SITES_TEST
-    global NUM_UNMON_SITES_TRAIN
-    global NUM_UNMON_SITES
-
-    NUM_MON_SITES = num_mon_sites
-    NUM_MON_INST_TEST = num_mon_inst_test
-    NUM_MON_INST_TRAIN = num_mon_inst_train
-    NUM_MON_INST = num_mon_inst_test + num_mon_inst_train
-    NUM_UNMON_SITES_TEST = num_unmon_sites_test
-    NUM_UNMON_SITES_TRAIN = num_unmon_sites_train
-    NUM_UNMON_SITES = num_unmon_sites_test + num_unmon_sites_train
-
-    process()
+    end = time.time()
+    print('Finished %d_%d_%d_%d.h5 in %f seconds' %
+          (num_mon_sites, num_mon_inst, num_unmon_sites_train,
+           num_unmon_sites_test, end - start))
 
 
-if __name__ == "__main__":
-    main(100, 30, 60, 5500, 3500)
+if __name__ == '__main__':
+    with open('config.json') as config_file:
+        config = json.load(config_file)
+
+    main(config)

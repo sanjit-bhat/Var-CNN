@@ -1,0 +1,28 @@
+{
+    "data_dir": "data/",
+    "predictions_dir": "predictions/",
+
+    "_comment1": "====== World Size Params ======",
+    "num_mon_sites": 100,
+    "num_mon_inst_train": 90,
+    "num_mon_inst_test": 10,
+    "num_unmon_sites_train": 9000,
+    "num_unmon_sites_test": 1000,
+
+    "_comment2": "====== Attack Params (use batch size 50 for Var-CNN) ======",
+    "model_name": "var-cnn",
+    "batch_size": 50,
+
+    "_comment3": "====== Var-CNN Architecture Params ======",
+    "mixture": [["dir", "metadata"], ["time", "metadata"]],
+
+    "_comment4": "====== Other Params =======",
+    "seq_length": 5000,
+    "df_epochs": 30,
+    "var_cnn_max_epochs": 150,
+    "var_cnn_base_patience": 5,
+    "dir_dilations": true,
+    "time_dilations": true,
+    "inter_time": true,
+    "scale_metadata": true
+}
